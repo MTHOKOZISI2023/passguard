@@ -489,12 +489,20 @@
 
     <div class="server-status">
       <div class="status-dot" id="status-dot"></div>
-      <span id="status-text">checking server...</span>
+      <span id="status-text">checking backend...</span>
     </div>
   </main>
 
   <script>
     const BACKEND_URL = "http://localhost:8000";
+
+    function canUseLocalBackend() {
+      return (
+        window.location.protocol === "file:" ||
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+      );
+    }
 
     function analyzeLocal() {
       const pwd = document.getElementById("pwd").value;
@@ -595,6 +603,13 @@
       const btn = document.getElementById("analyze-btn");
       const blink = document.getElementById("blink-dot");
 
+      if (!canUseLocalBackend()) {
+        panel.className = "backend-panel error";
+        blink.style.display = "none";
+        body.innerHTML = `<strong style="color:var(--weak)">Frontend demo mode</strong><br />GitHub Pages cannot run the Python backend. Clone the repo, start FastAPI locally, then open <code style="font-size:0.75rem">index.html</code> from the cloned folder.`;
+        return;
+      }
+
       panel.className = "backend-panel loading";
       blink.style.display = "block";
       body.innerHTML = '<span style="color:var(--muted)">Sending to backend and checking breach databases...</span>';
@@ -648,6 +663,12 @@
       const dot = document.getElementById("status-dot");
       const text = document.getElementById("status-text");
 
+      if (!canUseLocalBackend()) {
+        dot.className = "status-dot";
+        text.textContent = "frontend demo - backend requires local setup";
+        return;
+      }
+
       try {
         const res = await fetch(`${BACKEND_URL}/health`, { signal: AbortSignal.timeout(2000) });
 
@@ -664,7 +685,9 @@
     }
 
     checkServer();
-    setInterval(checkServer, 5000);
+    if (canUseLocalBackend()) {
+      setInterval(checkServer, 5000);
+    }
   </script>
 </body>
 </html>

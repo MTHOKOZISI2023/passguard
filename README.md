@@ -60,16 +60,15 @@ PassGuard follows a two-tier client-server architecture:
 ```text
 passguard/
 +-- index.html
-+-- frontend/
-|   +-- index.html
 +-- backend/
+    +-- __init__.py
     +-- main.py
     +-- requirements.txt
 ```
 
 The current frontend is a self-contained HTML file. It includes the markup, styling, and JavaScript needed for the user interface and local password analysis.
 
-The thesis design expects a FastAPI backend with:
+The FastAPI backend provides:
 
 - `GET /health` for server availability checks.
 - `POST /analyze` for password analysis requests.
@@ -79,6 +78,18 @@ The frontend sends password analysis requests to:
 ```text
 http://localhost:8000/analyze
 ```
+
+## GitHub Pages Demo vs. Local Backend
+
+The GitHub Pages version runs the frontend only:
+
+```text
+https://mthokozisi2023.github.io/passguard/
+```
+
+GitHub Pages cannot run Python, so the backend analysis will not work from the hosted page by itself. This is expected. To use the full system, run the FastAPI backend locally and open the cloned `index.html` file from the same computer.
+
+The frontend avoids automatically contacting `localhost` when it is hosted on GitHub Pages, so the browser should not show a permission prompt for local-device access.
 
 ## Frontend Behaviour
 
@@ -121,7 +132,43 @@ Expected response shape:
 }
 ```
 
-## Running the Frontend
+## Local Setup on Windows
+
+Clone the repository:
+
+```bash
+git clone https://github.com/MTHOKOZISI2023/passguard.git
+cd passguard
+```
+
+Create and activate a virtual environment:
+
+```bash
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+If PowerShell blocks activation, use the Python executable inside the virtual environment directly:
+
+```bash
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+If activation works, install the backend dependencies and start the server:
+
+```bash
+pip install -r backend\requirements.txt
+python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Then open `index.html` locally in a browser. The status line should change to:
+
+```text
+backend connected - localhost:8000
+```
+
+## Running the Frontend Only
 
 Open the frontend file directly in a browser:
 
@@ -129,16 +176,15 @@ Open the frontend file directly in a browser:
 index.html
 ```
 
-The local strength meter will work immediately. Backend-powered analysis requires the FastAPI server to be running at `http://localhost:8000`.
+The local strength meter will work immediately, even without Python. Backend-powered analysis requires the FastAPI server to be running at `http://localhost:8000`.
 
 ## Running the Backend
 
-When the backend files are added, the intended development workflow is:
+The backend development workflow is:
 
 ```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
+pip install -r backend/requirements.txt
+python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 FastAPI documentation should then be available at:
